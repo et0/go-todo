@@ -26,7 +26,7 @@ func Load(t *[]models.Task) {
 }
 
 func Save(t *[]models.Task) {
-	file, err := os.OpenFile("internal/storage/tasks.json", os.O_WRONLY, 0644)
+	file, err := os.OpenFile("internal/storage/tasks.json", os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
 		panic(err)
 	}
