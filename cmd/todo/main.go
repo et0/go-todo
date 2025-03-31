@@ -35,6 +35,7 @@ func main() {
 			Completed: 0,
 			CreatedAt: now.Format("02.01.2006"),
 		})
+		fmt.Printf(models.SuccessAdd, os.Args[2])
 	case "list":
 		isCompleted := false
 		isCheck := " "
