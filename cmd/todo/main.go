@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/et0/go-todo/internal/models"
@@ -47,6 +48,22 @@ func main() {
 			fmt.Printf("%d. [%s] %s (%s)\n", t.Id, isCheck, t.Title, t.CreatedAt)
 		}
 	case "done":
+		if len(os.Args) < 3 {
+			fmt.Println(models.WrongArgsDone)
+			os.Exit(0)
+		}
+		doneId, err := strconv.Atoi(os.Args[2])
+		if err != nil {
+			fmt.Println(models.WrongArgsDone)
+			os.Exit(0)
+		}
+		for i, t := range tasks {
+			if t.Id != doneId {
+				continue
+			}
+			tasks[i].Completed = 1
+			break
+		}
 	case "delete":
 	case "clear":
 	}
