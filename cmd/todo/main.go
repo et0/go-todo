@@ -28,8 +28,9 @@ func main() {
 		}
 
 		now := time.Now().Local()
+		lastId := tasks[len(tasks)-1].Id
 		tasks = append(tasks, models.Task{
-			Id:        len(tasks) + 1,
+			Id:        lastId + 1,
 			Title:     os.Args[2],
 			Completed: 0,
 			CreatedAt: now.Format("02.01.2006"),
