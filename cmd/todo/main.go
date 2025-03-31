@@ -95,5 +95,7 @@ func main() {
 			break
 		}
 	case "clear":
+		fmt.Printf(models.SuccessClear, len(tasks))
+		tasks = []models.Task{}
 	}
 }
