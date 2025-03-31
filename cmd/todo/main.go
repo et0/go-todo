@@ -67,6 +67,29 @@ func main() {
 			break
 		}
 	case "delete":
+		if len(os.Args) < 3 {
+			fmt.Println(models.WrongArgsDelete)
+			os.Exit(0)
+		}
+		doneId, err := strconv.Atoi(os.Args[2])
+		if err != nil {
+			fmt.Println(models.WrongArgsDelete)
+			os.Exit(0)
+		}
+		for i, t := range tasks {
+			if t.Id != doneId {
+				continue
+			}
+
+			// Если это последний элемент
+			if i+1 == len(tasks) {
+				tasks = tasks[:i]
+			} else {
+				tasks = append(tasks[:i], tasks[i+1:]...)
+			}
+			fmt.Printf(models.SuccessDelete, t.Title)
+			break
+		}
 	case "clear":
 	}
 }
