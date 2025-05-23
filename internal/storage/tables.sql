@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS tasks (
-    id integer PRIMARY KEY,
+    id integer GENERATED ALWAYS AS IDENTITY,
     title text,
     completed integer,
     created_at integer
