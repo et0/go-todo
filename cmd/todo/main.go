@@ -1,13 +1,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strconv"
-	"time"
 
 	"github.com/et0/go-todo/internal/models"
 	"github.com/et0/go-todo/internal/storage"
+
+	"github.com/jackc/pgx/v5"
 )
 
 func main() {
@@ -16,9 +18,20 @@ func main() {
 		os.Exit(0)
 	}
 
+	conn, err := pgx.Connect(context.Background(), "postgresql://leonid:@localhost:5432/todo")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+		os.Exit(1)
+	}
+	defer conn.Close(context.Background())
+
+	if err := conn.Ping(context.Background()); err != nil {
+		fmt.Fprintf(os.Stderr, "Ping failed: %v\n", err)
+		os.Exit(1)
+	}
+
 	var tasks = []models.Task{}
-	storage.Load(&tasks)
-	defer storage.Save(&tasks)
+	storage.LoadTasks(conn, &tasks)
 
 	switch os.Args[1] {
 	case "add":
@@ -27,18 +40,12 @@ func main() {
 			os.Exit(0)
 		}
 
-		lastId := 0
-		if len(tasks) > 0 {
-			lastId = tasks[len(tasks)-1].Id
+		err := storage.InsertTask(conn, os.Args[2])
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(0)
 		}
 
-		now := time.Now().Local()
-		tasks = append(tasks, models.Task{
-			Id:        lastId + 1,
-			Title:     os.Args[2],
-			Completed: 0,
-			CreatedAt: now.Format("02.01.2006"),
-		})
 		fmt.Printf(models.SuccessAdd, os.Args[2])
 	case "list":
 		isCompleted := false
@@ -63,11 +70,16 @@ func main() {
 			fmt.Println(models.WrongArgsDone)
 			os.Exit(0)
 		}
-		for i, t := range tasks {
+		for _, t := range tasks {
 			if t.Id != doneId {
 				continue
 			}
-			tasks[i].Completed = 1
+
+			err := storage.SetDone(conn, t.Id)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(0)
+			}
 			break
 		}
 	case "delete":
@@ -95,7 +107,10 @@ func main() {
 			break
 		}
 	case "clear":
-		fmt.Printf(models.SuccessClear, len(tasks))
-		tasks = []models.Task{}
+		err := storage.DeleteAll(conn)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(0)
+		}
 	}
 }
